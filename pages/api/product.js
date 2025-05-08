@@ -1,6 +1,6 @@
-import { redis } from "../../lib/redis.js";
-import cloudinary from "../../lib/cloudinary.js";
-import Product from "../../models/product.model.js";
+import { redis } from "@/lib/redis";
+import cloudinary from "@/lib/cloudinary";
+import Product from "@/models/product.model";
 
 // GET all products
 export async function getAllProducts(req, res) {

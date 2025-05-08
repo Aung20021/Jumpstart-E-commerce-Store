@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { PlusCircle, Upload, Loader } from "lucide-react";
+import { PlusCircle, Upload, Loader, Sparkles } from "lucide-react";
 import { useProductStore } from "@/stores/useProductStore";
+import axios from "@/lib/axios";
 
 const categories = [
   "jeans",
@@ -22,6 +23,7 @@ const CreateProductForm = () => {
     image: "",
   });
 
+  const [generatingDescription, setGeneratingDescription] = useState(false);
   const { createProduct, loading } = useProductStore();
 
   const handleSubmit = async (e) => {
@@ -44,12 +46,39 @@ const CreateProductForm = () => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-
       reader.onloadend = () => {
         setNewProduct({ ...newProduct, image: reader.result });
       };
+      reader.readAsDataURL(file);
+    }
+  };
 
-      reader.readAsDataURL(file); // base64
+  const handleDescription = async () => {
+    if (!newProduct.image) {
+      return;
+    }
+
+    setGeneratingDescription(true);
+
+    try {
+      // Send the image data to the API
+      const response = await axios.post("/generate-description", {
+        imageBase64: newProduct.image.split(",")[1], // Send only the Base64 data (without the prefix)
+      });
+
+      // Set the generated description to the product state
+      setNewProduct((prevState) => ({
+        ...prevState,
+        description: response.data.description || "No description generated.",
+      }));
+    } catch (error) {
+      console.error("Error generating description:", error);
+      setNewProduct((prevState) => ({
+        ...prevState,
+        description: "Failed to generate description.",
+      }));
+    } finally {
+      setGeneratingDescription(false);
     }
   };
 
@@ -80,9 +109,7 @@ const CreateProductForm = () => {
             onChange={(e) =>
               setNewProduct({ ...newProduct, name: e.target.value })
             }
-            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2
-						 px-3 text-white focus:outline-none focus:ring-2
-						focus:ring-emerald-500 focus:border-emerald-500"
+            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             required
           />
         </div>
@@ -102,9 +129,7 @@ const CreateProductForm = () => {
               setNewProduct({ ...newProduct, description: e.target.value })
             }
             rows="3"
-            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm
-						 py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 
-						 focus:border-emerald-500"
+            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             required
           />
         </div>
@@ -125,9 +150,7 @@ const CreateProductForm = () => {
               setNewProduct({ ...newProduct, price: e.target.value })
             }
             step="0.01"
-            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm 
-						py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500
-						 focus:border-emerald-500"
+            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             required
           />
         </div>
@@ -146,9 +169,7 @@ const CreateProductForm = () => {
             onChange={(e) =>
               setNewProduct({ ...newProduct, category: e.target.value })
             }
-            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md
-						 shadow-sm py-2 px-3 text-white focus:outline-none 
-						 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             required
           >
             <option value="">Select a category</option>
@@ -160,7 +181,7 @@ const CreateProductForm = () => {
           </select>
         </div>
 
-        <div className="mt-1 flex items-center">
+        <div className="mt-1 flex items-center gap-3">
           <input
             type="file"
             id="image"
@@ -175,24 +196,37 @@ const CreateProductForm = () => {
             <Upload className="h-5 w-5 inline-block mr-2" />
             Upload Image
           </label>
+
           {newProduct.image && (
-            <span className="ml-3 text-sm text-gray-400">Image uploaded </span>
+            <button
+              type="button"
+              onClick={handleDescription}
+              className="flex items-center bg-gray-700 py-2 px-3 border border-gray-600 rounded-md shadow-sm text-sm text-emerald-300 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+              disabled={generatingDescription}
+            >
+              {generatingDescription ? (
+                <>
+                  <Loader className="h-4 w-4 animate-spin mr-2" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Generate Description
+                </>
+              )}
+            </button>
           )}
         </div>
 
         <button
           type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md 
-					shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 
-					focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
           disabled={loading}
         >
           {loading ? (
             <>
-              <Loader
-                className="mr-2 h-5 w-5 animate-spin"
-                aria-hidden="true"
-              />
+              <Loader className="mr-2 h-5 w-5 animate-spin" />
               Loading...
             </>
           ) : (
@@ -206,4 +240,5 @@ const CreateProductForm = () => {
     </motion.div>
   );
 };
+
 export default CreateProductForm;

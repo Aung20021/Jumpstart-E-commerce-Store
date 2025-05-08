@@ -12,11 +12,7 @@ const Navbar = () => {
   const isAdmin = user?.role === "admin"; // Check if the user is an admin
 
   const logout = async () => {
-    // Use NextAuth's signOut directly if user logs out
-    const result = await signOut({ redirect: false });
-    if (result.ok) {
-      // Optionally add any toast notifications or additional logic here
-    }
+    await signOut({ redirect: true, callbackUrl: "/" });
   };
 
   return (

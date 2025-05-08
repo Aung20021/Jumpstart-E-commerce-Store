@@ -10,8 +10,8 @@ import Link from "next/link";
 
 export default function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@gmail.com");
+  const [password, setPassword] = useState("123456");
   const [loading, setLoading] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState("/"); // Default redirect URL
 

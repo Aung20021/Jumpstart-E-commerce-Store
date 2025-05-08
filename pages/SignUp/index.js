@@ -62,6 +62,11 @@ const SignUpPage = () => {
         <h2 className="mt-6 text-center text-3xl font-extrabold text-emerald-400">
           Create your account
         </h2>
+        <p className="mt-2 text-xl text-center text-sm text-gray-400">
+          Or try logging in as an{" "}
+          <span className="font-medium text-emerald-300">admin</span> to access
+          the dashboard.
+        </p>
       </motion.div>
 
       <motion.div
