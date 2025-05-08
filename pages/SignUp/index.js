@@ -5,7 +5,7 @@ import { UserPlus, Mail, Lock, User, ArrowRight, Loader } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
-
+import { signIn } from "next-auth/react";
 const SignUpPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -19,6 +19,7 @@ const SignUpPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
@@ -27,11 +28,22 @@ const SignUpPage = () => {
       });
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.message || "Signup failed");
 
-      toast.success("Signup successful!");
-      router.push("/");
+      toast.success("Signup successful! Logging in...");
+
+      // auto sign in using next-auth credentials provider
+      const loginRes = await signIn("credentials", {
+        redirect: false,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (loginRes.ok) {
+        router.push("/"); // or dashboard
+      } else {
+        throw new Error("Auto login failed. Please login manually.");
+      }
     } catch (err) {
       toast.error(err.message);
     } finally {

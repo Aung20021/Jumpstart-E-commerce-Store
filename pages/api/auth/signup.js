@@ -25,7 +25,10 @@ export default async function handler(req, res) {
     const newUser = new User({ name, email, password });
     await newUser.save();
 
-    return res.status(201).json({ message: "User created successfully" });
+    return res.status(201).json({
+      message: "User created successfully",
+      user: { email }, // send email to auto login
+    });
   } catch (error) {
     console.error("Signup error:", error);
     return res.status(500).json({ message: "Server error" });
